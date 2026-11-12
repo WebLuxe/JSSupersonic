@@ -466,7 +466,7 @@ ${p.stock > 0 && p.stock <= 5 ? `<p class="low">Only ${p.stock} left</p>` : ""}$
       i = (k + slides.length) % slides.length;
       slides.forEach((s, j) => { s.classList.toggle("on", j === i); s.classList.toggle("leave", s === prev && j !== i); s.setAttribute("aria-hidden", j !== i); });
       setTimeout(() => prev.classList.remove("leave"), 900);
-      bars.forEach((b, j) => { b.classList.remove("on"); b.classList.toggle("done", j < i); b.setAttribute("aria-current", j === i); });
+      bars.forEach((b, j) => { b.classList.remove("on"); b.classList.toggle("past", j < i); b.setAttribute("aria-current", j === i); });
       void h.offsetWidth;
       bars[i].classList.add("on");
       if (n) n.textContent = String(i + 1).padStart(2, "0");
@@ -681,6 +681,7 @@ ${p.stock > 0 && p.stock <= 5 ? `<p class="low">Only ${p.stock} left</p>` : ""}$
       if (p.stock === 0) $$("[data-add-main], #buy-now").forEach((b) => (b.disabled = true));
       // tabs
       tabs($(".pinfo"));
+      $("[data-show-specs]")?.addEventListener("click", () => $("#t-sp")?.click());
       // mobile sticky buy bar appears once the main buttons scroll away
       const sb = $(".sticky-buy"), row = $(".buy-row");
       if (sb && row && "IntersectionObserver" in window) new IntersectionObserver(([en]) => sb.classList.toggle("on", !en.isIntersecting && en.boundingClientRect.top < 0)).observe(row);
@@ -784,6 +785,8 @@ ${p.stock > 0 && p.stock <= 5 ? `<p class="low">Only ${p.stock} left</p>` : ""}$
     const im = $(".gal-main img"); im.src = imgUrl(p.img, 900); im.alt = p.name;
     $(".gal-th").innerHTML = "";
     $("[data-p-specs]").innerHTML = Object.entries(p.specs || {}).map(([k, v]) => `<tr><th scope="row">${esc(k)}</th><td>${esc(v)}</td></tr>`).join("");
+    const glance = $("[data-p-glance]"), facts = Object.entries(p.specs || {}).slice(0, 4);
+    if (glance) { glance.innerHTML = facts.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join(""); glance.closest(".glance").hidden = !facts.length; }
     $(".terms").innerHTML = Object.keys(SITE.installments).map((m) => `<button type="button" aria-pressed="${m === "24"}"><b>${fmt(monthly(p.price, m))}</b>a month, ${m} months</button>`).join("");
     const old = $("[data-p-old]"); if (old) old.hidden = !pct(p);
   }
@@ -967,6 +970,26 @@ ${p.stock > 0 && p.stock <= 5 ? `<p class="low">Only ${p.stock} left</p>` : ""}$
     tabs($("#acct-tabs"));
   }
 
+  /* ------------------------------------------------------------ phone header: tuck the logo row away while scrolling down */
+  function tuckHeader() {
+    const hdr = $(".hdr"), box = $(".hdr .search");
+    if (!hdr || !box || reduce) return;
+    const html = document.documentElement, phone = matchMedia("(max-width: 760px)");
+    const measure = () => html.style.setProperty("--tuck", `${Math.max(0, box.offsetTop - 10)}px`);
+    let last = scrollY, queued = false;
+    const update = () => {
+      queued = false;
+      const y = scrollY, moved = y - last;
+      if (Math.abs(moved) < 8) return;
+      last = y;
+      html.classList.toggle("hdr-tuck", phone.matches && moved > 0 && y > 240 && !box.contains(document.activeElement));
+    };
+    measure();
+    addEventListener("resize", debounce(measure, 150));
+    addEventListener("scroll", () => { if (!queued) { queued = true; requestAnimationFrame(update); } }, { passive: true });
+    box.addEventListener("focusin", () => html.classList.remove("hdr-tuck"));
+  }
+
   /* ------------------------------------------------------------ boot */
   // a missing photo shows an empty tile instead of broken-image text
   document.addEventListener("error", (e) => { if (e.target.tagName === "IMG") e.target.classList.add("broken"); }, true);
@@ -981,6 +1004,7 @@ ${p.stock > 0 && p.stock <= 5 ? `<p class="low">Only ${p.stock} left</p>` : ""}$
   countdowns();
   forms();
   cookies();
+  tuckHeader();
   const hdrBtn = $("[data-open='cart']");
   hdrBtn && hdrBtn.addEventListener("mouseenter", miniCart, { once: true });
   const key = page.replace("-", "");

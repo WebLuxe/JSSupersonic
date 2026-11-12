@@ -231,7 +231,7 @@
       const sub = items.reduce((s, x) => s + x.price * x.qty, 0), name = names[i % names.length];
       const st = d < Date.now() - 4 * 864e5 ? (i % 9 === 0 ? "Cancelled" : "Delivered") : STATUSES[i % 3];
       list.push({ no: "JSS" + (9000000 + i), date: d.toISOString(), name, email: name.toLowerCase().replace(/[^a-z]+/g, ".") + "@example.com", phone: "5" + String(7000000 + i * 1371).slice(0, 7),
-        method: i % 3 ? "home" : "collect", address: i % 3 ? "Sample address, Quatre Bornes, Plaines Wilhems" : "", store: i % 3 ? "" : "Curepipe", notes: "",
+        method: i % 3 ? "home" : "collect", address: i % 3 ? "Sample address, Quatre Bornes, Plaines Wilhems" : "", store: i % 3 ? "" : ((BASE.stores || [])[i % 2] || { name: "In store" }).name, notes: "",
         pay: ["Card", "Juice by MCB", "Cash on delivery", "Pay monthly (24 months)"][i % 4], items, sub, discount: 0, delivery: sub >= 5000 ? 0 : 300, install: 0,
         total: sub + (sub >= 5000 ? 0 : 300), status: st, history: [{ status: "Placed", at: d.toISOString() }].concat(st !== "Placed" ? [{ status: st, at: new Date(+d + 864e5).toISOString() }] : []), sample: true });
     }
@@ -277,7 +277,7 @@
       <div class="two"><label class="f">Brand<input class="in" id="e-brand" value="${esc(p.brand)}" list="brands"></label>
       <label class="f">Category<select class="sel" id="e-cat">${CATS().map((c) => `<option value="${c.id}"${c.id === p.cat ? " selected" : ""}>${esc(c.name)}</option>`).join("")}</select></label></div>
       <datalist id="brands">${[...new Set(state.products.map((x) => x.brand))].map((b) => `<option value="${esc(b)}">`).join("")}</datalist>
-      <label class="f">Type <small>Shown as a filter on the category page, e.g. TVs or Sofas</small><input class="in" id="e-sub" value="${esc(p.sub || "")}" list="subs"></label><datalist id="subs">${subs(p.cat).map((s) => `<option value="${esc(s)}">`).join("")}</datalist>
+      <label class="f">Type <small>Shown as a filter on the category page, e.g. TVs or Chargers</small><input class="in" id="e-sub" value="${esc(p.sub || "")}" list="subs"></label><datalist id="subs">${subs(p.cat).map((s) => `<option value="${esc(s)}">`).join("")}</datalist>
       <div class="three"><label class="f">Price (Rs)<input class="in" id="e-price" type="number" min="0" step="10" value="${p.price || ""}"></label>
       <label class="f">Was (Rs) <small>Leave empty if not on sale</small><input class="in" id="e-old" type="number" min="0" step="10" value="${p.old || ""}"></label>
       <label class="f">In stock<input class="in" id="e-stock" type="number" min="0" value="${p.stock ?? 0}"></label></div>
@@ -298,7 +298,7 @@
       const specs = {};
       $("#e-specs").value.split("\n").forEach((l) => { const i = l.indexOf(":"); if (i > 0) specs[l.slice(0, i).trim()] = l.slice(i + 1).trim(); });
       const tags = [old ? "deal" : "", $("#e-new").checked ? "new" : "", $("#e-best").checked ? "best" : ""].filter(Boolean);
-      Object.assign(p, { name, brand: $("#e-brand").value.trim() || "Supersonic Home", cat: $("#e-cat").value, sub: $("#e-sub").value.trim(), price, stock: Math.max(0, +$("#e-stock").value || 0),
+      Object.assign(p, { name, brand: $("#e-brand").value.trim() || "JS Supersonic", cat: $("#e-cat").value, sub: $("#e-sub").value.trim(), price, stock: Math.max(0, +$("#e-stock").value || 0),
         img: $("#e-img").value.trim(), desc: $("#e-desc").value.trim(), specs, tags, hidden: $("#e-hidden").checked });
       if (old) p.old = old; else delete p.old;
       if (p.isNew) { delete p.isNew; p.rating = 0; p.reviews = 0; state.products.push(p); }

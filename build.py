@@ -65,6 +65,26 @@ def wa_href(num, root):
     return f"https://wa.me/{digits}" if len(digits) >= 10 else f"{root}help.html#contact"
 
 
+def maps_href(s):
+    q = f"{SITE['name']} {s['address']} Mauritius".replace(" ", "+")
+    return "https://www.google.com/maps/search/?api=1&amp;query=" + html.escape(q, quote=True)
+
+
+HAS_WA = bool(re.sub(r"\D", "", SITE.get("whatsapp", "")))
+DEMO = bool(SITE.get("demo"))  # concept preview: adds a notice bar and keeps search engines out
+STRAP = SITE.get("strapline", "Electronics · Phones · Home")
+STORE_NAMES = " and ".join(s["name"] for s in STORES) if len(STORES) <= 2 else ", ".join(s["name"] for s in STORES)
+
+
+def count(n):
+    return f"{n} product" + ("" if n == 1 else "s")
+
+
+def gallery(p):
+    """Main photo plus any extra photos listed under "imgs". One photo means no thumbnail strip."""
+    return [p["img"]] + [i for i in p.get("imgs", []) if i]
+
+
 # ---------------------------------------------------------------- icons
 # Square caps and mitred joins: a slightly harder line than the usual round icon sets.
 ICON = {
@@ -106,8 +126,8 @@ LOGO = """<svg viewBox="0 0 232 48" role="img" aria-label="JS Supersonic"><title
 <g transform="skewX(-12)"><rect x="25" y="5" width="50" height="38" rx="7" fill="#ff5a1f"/></g>
 <text x="45" y="33" text-anchor="middle" font-family="Archivo, Arial, sans-serif" font-weight="900" font-style="italic" font-size="23" fill="#11141b">JS</text>
 <text x="80" y="28" font-family="Archivo, Arial, sans-serif" font-weight="800" font-size="20" textLength="150" lengthAdjust="spacingAndGlyphs" fill="#fff">SUPERSONIC</text>
-<text x="81" y="41" font-family="Archivo, Arial, sans-serif" font-weight="600" font-size="8" textLength="148" lengthAdjust="spacingAndGlyphs" fill="#a3a9b6">ELECTRONICS · HOME · LIVING</text>
-</svg>"""
+<text x="81" y="41" font-family="Archivo, Arial, sans-serif" font-weight="600" font-size="8" textLength="148" lengthAdjust="spacingAndGlyphs" fill="#a3a9b6">{strap}</text>
+</svg>""".replace("{strap}", html.escape(SITE.get("strapline", "Electronics · Phones · Home").upper()))
 
 
 # ---------------------------------------------------------------- shared pieces
@@ -177,13 +197,17 @@ def header(root, page):
 <a class="mega-pic" href="{root}category/{c['id']}.html"><img src="{img(c['img'], 700, 420)}" alt="" loading="lazy" width="700" height="420"><div><strong>{e(c['name'])}</strong><span>{e(c['line'])}</span></div></a>
 </div></div></li>""")
     tel = phone_href(SITE["phone"], root)
-    return f"""<div class="topbar"><div class="w"><p>{e(SITE['announcement'])}</p>
+    by = e(SITE.get("demo_by", ""))
+    by_html = f'<a href="{e(SITE["demo_link"])}" target="_blank" rel="noopener">{by}</a>' if SITE.get("demo_link") else by
+    demo = (f'<div class="demo-bar" role="note"><div class="w"><b>Concept preview</b><span><span class="hide-s">A website design proposed for {e(SITE["name"])}'
+            f'{f" by {by_html}" if by else ""}. </span>Products, prices and offers are samples, and no orders are taken.</span></div></div>') if DEMO else ""
+    return f"""{demo}<div class="topbar"><div class="w"><p>{e(SITE['announcement'])}</p>
 <nav aria-label="Quick links"><a href="{root}track.html">Track my order</a><a href="{root}stores.html">Our stores</a><a href="{root}help.html">Help</a><a href="{tel}">{e(SITE['phone'])}</a></nav></div></div>
 <header class="hdr"><div class="w hdr-row">
 <button class="burger" type="button" data-open="menu" aria-label="Open menu" aria-controls="menu">{icon('menu', 'ic')}</button>
 <a class="logo" href="{root}index.html" data-label="Home">{LOGO}</a>
 <form class="search" action="{root}shop.html" role="search"><label class="sr" for="q-{page}">Search products</label>
-<input id="q-{page}" type="search" name="q" placeholder="Search TVs, phones, fridges, sofas" autocomplete="off" enterkeyhint="search">
+<input id="q-{page}" type="search" name="q" placeholder="Search TVs, phones, fridges, chargers" autocomplete="off" enterkeyhint="search">
 <button type="submit" aria-label="Search">{icon('search', 'ic')}</button><div class="suggest" hidden></div></form>
 <div class="acts">
 <a class="act hide-m" href="{root}account.html">{icon('user', 'ic')}<span class="t"><small>Sign in</small><span class="l">Account</span></span></a>
@@ -202,9 +226,12 @@ def footer(root):
     wa = wa_href(SITE["whatsapp"], root)
     wa_attr = ' target="_blank" rel="noopener"' if wa.startswith("https") else ""
     year = date.today().year
+    wa_link = f'<a href="{wa}"{wa_attr}>{icon("chat")} WhatsApp us</a>' if HAS_WA else ""
+    fb = SITE.get("socials", {}).get("facebook", "")
+    fb_link = f'<a href="{e(fb)}" target="_blank" rel="noopener">{icon("fb")} Facebook</a>' if fb else ""
     return f"""<footer class="ftr"><div class="w ftr-top">
 <div class="ftr-about"><a class="logo" href="{root}index.html" data-label="Home">{LOGO}</a><p>{e(SITE['tagline'])}</p>
-<div class="ftr-c"><a href="{tel}">{icon('phone')} {e(SITE['phone'])}</a><a href="{wa}"{wa_attr}>{icon('chat')} WhatsApp us</a><a href="mailto:{e(SITE['email'])}">{icon('mail')} {e(SITE['email'])}</a></div></div>
+<div class="ftr-c"><a href="{tel}">{icon('phone')} {e(SITE['phone'])}</a>{wa_link}<a href="mailto:{e(SITE['email'])}">{icon('mail')} {e(SITE['email'])}</a>{fb_link}</div></div>
 <div><h2>Shop</h2><ul>{''.join(f'<li><a href="{root}category/{c["id"]}.html">{e(c["name"])}</a></li>' for c in CATS)}<li><a href="{root}deals.html">Deals</a></li></ul></div>
 <div><h2>Help</h2><ul><li><a href="{root}track.html">Track my order</a></li><li><a href="{root}help.html">Delivery and returns</a></li><li><a href="{root}pay-monthly.html">Pay monthly</a></li><li><a href="{root}help.html#contact">Contact us</a></li><li><a href="{root}account.html">My account</a></li></ul></div>
 <div><h2>Company</h2><ul><li><a href="{root}stores.html">Our stores</a></li><li><a href="{root}brands.html">Brands</a></li><li><a href="{root}new.html">New in</a></li><li><a href="{root}privacy.html">Privacy policy</a></li><li><a href="{root}terms.html">Terms and conditions</a></li></ul></div>
@@ -253,7 +280,7 @@ def layout(*, page, path, title, desc, body, schema=(), index=True, extra_body_a
         root = ""
     canon = URL + ("" if path == "index.html" else path)
     ld = "".join(f'<script type="application/ld+json">{json.dumps(s, ensure_ascii=False)}</script>' for s in schema)
-    robots = "index, follow" if index else "noindex, follow"
+    robots = "noindex, nofollow" if DEMO else "index, follow" if index else "noindex, follow"
     from urllib.parse import urlsplit
     prefix = urlsplit(URL).path or "/"
     # 404 can be served at any depth, so pick the base path at runtime (works on GitHub Pages, a custom domain and locally)
@@ -318,17 +345,16 @@ def write(path, **kw):
 ORG = {
     "@context": "https://schema.org", "@type": "ElectronicsStore", "@id": URL + "#store",
     "name": SITE["name"], "url": URL, "logo": URL + "assets/img/apple-touch-icon.png", "image": URL + "assets/img/og.png",
-    "description": SITE["tagline"], "email": SITE["email"], "priceRange": "Rs 2,000 to Rs 70,000",
+    "description": SITE["tagline"], "email": SITE["email"], "priceRange": f"{fmt(min(p['price'] for p in PRODUCTS))} to {fmt(max(p['price'] for p in PRODUCTS))}",
     "currenciesAccepted": "MUR", "paymentAccepted": "Cash, Credit Card, Debit Card, Juice, my.t money, Blink",
-    "address": {"@type": "PostalAddress", "streetAddress": "Royal Road", "addressLocality": "Port Louis", "addressCountry": "MU"},
-    "openingHoursSpecification": [
-        {"@type": "OpeningHoursSpecification", "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], "opens": "09:00", "closes": "18:00"},
-        {"@type": "OpeningHoursSpecification", "dayOfWeek": "Sunday", "opens": "09:00", "closes": "13:00"}],
+    "address": {"@type": "PostalAddress", "streetAddress": STORES[0]["address"].split(",")[0], "addressLocality": STORES[0].get("town", STORES[0]["name"]), "addressCountry": "MU"},
     "department": [{"@type": "ElectronicsStore", "name": f"{SITE['name']} {s['name']}",
-                    "address": {"@type": "PostalAddress", "streetAddress": s["address"].split(",")[0], "addressLocality": s["name"], "addressCountry": "MU"}} for s in STORES],
+                    "address": {"@type": "PostalAddress", "streetAddress": s["address"].split(",")[0], "addressLocality": s.get("town", s["name"]), "addressCountry": "MU"}} for s in STORES],
 }
 if len(re.sub(r"\D", "", SITE["phone"])) >= 10:
     ORG["telephone"] = SITE["phone"]
+if any(SITE.get("socials", {}).values()):
+    ORG["sameAs"] = [u for u in SITE["socials"].values() if u]
 WEBSITE = {"@context": "https://schema.org", "@type": "WebSite", "name": SITE["name"], "url": URL,
            "potentialAction": {"@type": "SearchAction", "target": URL + "shop.html?q={search_term_string}", "query-input": "required name=search_term_string"}}
 
@@ -372,22 +398,24 @@ def build_home():
 <div class="w slide-c"><p class="slide-k"><span>{e(s['kicker'])}</span></p><{tag} class="disp">{title}</{tag}>
 <p class="slide-t">{e(s['text'])}</p><div class="slide-a"><a class="btn" href="{s['href']}">{e(s['cta'])} {icon('arrow')}</a></div></div></div>""")
     deal = max((p for p in PRODUCTS if p["stock"] > 0), key=pct)
-    order = ["tv-audio", "phones", "appliances", "computing", "gaming", "kitchen", "furniture"]
+    order = [c for c in ["tv-audio", "phones", "appliances", "computing", "gaming", "kitchen", "accessories"] if c in CAT]
+    order += [c["id"] for c in CATS if c["id"] not in order]
     tiles = "".join(f"""<a class="tile" href="category/{c}.html"><img src="{img(CAT[c]['img'], 900 if i == 0 else 600, 700 if i == 0 else 450)}" alt="" loading="lazy" width="600" height="450">
-<span class="tile-l"><strong>{e(CAT[c]['name'])}</strong><span>{sum(1 for p in PRODUCTS if p['cat'] == c)} products {icon('arrow')}</span></span></a>""" for i, c in enumerate(order))
+<span class="tile-l"><strong>{e(CAT[c]['name'])}</strong><span>{count(sum(1 for p in PRODUCTS if p['cat'] == c))} {icon('arrow')}</span></span></a>""" for i, c in enumerate(order))
     deals = sorted([p for p in PRODUCTS if pct(p)], key=pct, reverse=True)[:10]
-    best_tabs = [("", "All"), ("tv-audio", "TV & Audio"), ("phones", "Phones"), ("appliances", "Appliances"), ("furniture", "Furniture")]
+    best_tabs = [("", "All")] + [(c, t) for c, t in [("tv-audio", "TV & Audio"), ("phones", "Phones"), ("appliances", "Appliances"), ("accessories", "Accessories")] if c in CAT]
     best = sorted(PRODUCTS, key=lambda p: ("best" in p["tags"], p["reviews"]), reverse=True)[:8]
     new = [p for p in PRODUCTS if "new" in p["tags"]]
-    brands = list(dict.fromkeys(p["brand"] for p in PRODUCTS if p["brand"] != "Supersonic Home"))
+    brands = list(dict.fromkeys(p["brand"] for p in PRODUCTS))
     brand_links = "".join(f'<a href="shop.html?brand={e(b)}" data-label="{e(b)}">{e(b)}</a>' for b in brands)
-    ticker_items = ["Free delivery over Rs 5,000", "6 months at no extra cost", "Click & Collect in 2 hours", "Official local warranty", "Air con installation by our own team", "Open Sundays in Grand Baie"]
+    ticker_items = ["Free delivery over Rs 5,000", "6 months at no extra cost", "Click & Collect in 2 hours", "Official local warranty", "Air con installation by our own team", f"Find us at {STORE_NAMES}"]
     tick = "".join(f"<span>{e(t)}</span>" for t in ticker_items)
-    stores = "".join(f'<div class="store"><span class="n">0{i + 1}</span><h3>{e(s["name"])}</h3><p>{e(s["address"])}<br>{e(s["hours"])}</p></div>' for i, s in enumerate(STORES))
+    stores = "".join(f'<div class="store"><span class="n">0{i + 1}</span><h3>{e(s["name"])}</h3><p>{e(s["address"])}<br>{e(s["hours"])}</p>'
+                     f'<a class="link" href="{maps_href(s)}" target="_blank" rel="noopener">Get directions {icon("arrow")}</a></div>' for i, s in enumerate(STORES))
     intro = """<div id="intro" aria-hidden="true"><div class="intro-lines"><i style="top:30%;animation-delay:0s"></i><i style="top:42%;animation-delay:.08s"></i><i style="top:58%;animation-delay:.16s"></i><i style="top:70%;animation-delay:.05s"></i></div>
 <div class="intro-core"><span class="intro-ring"></span><span class="intro-badge"><b>JS</b></span><span class="intro-word">""" + \
         "".join(f'<span style="--i:{i}">{ch}</span>' for i, ch in enumerate("SUPERSONIC")) + \
-        """</span></div><p class="intro-sub">Electronics · Home · Living</p></div>
+        """</span></div><p class="intro-sub">""" + e(STRAP) + """</p></div>
 <script>(function(){var i=document.getElementById('intro');try{if(sessionStorage.getItem('jss_intro')||matchMedia('(prefers-reduced-motion: reduce)').matches||document.documentElement.classList.contains('entering')){i.remove()}}catch(e){i.remove()}})()</script>"""
     body = f"""<section class="hero" aria-roledescription="carousel" aria-label="Featured offers">
 {''.join(slides)}
@@ -413,7 +441,7 @@ def build_home():
 <div class="grid" id="best" role="tabpanel" aria-labelledby="best-h">{''.join(card(p, root) for p in best)}</div></section>
 
 <section class="sec w" aria-label="Offers"><div class="duo">
-<a class="promo" href="pay-monthly.html"><img src="{img('1560185128-e173042f79dd', 1100, 700)}" alt="" loading="lazy" width="1100" height="700">
+<a class="promo" href="pay-monthly.html"><img src="{img('1604011854873-76e939ef5a5e', 1100, 700)}" alt="" loading="lazy" width="1100" height="700">
 <h2 class="disp">Pay monthly</h2><p>Spread any order over 6 to 36 months. Six months costs nothing extra and most answers come the same day.</p><span class="btn btn-white" style="align-self:flex-start">See how it works {icon('arrow')}</span></a>
 <a class="promo solid" href="deals.html"><span class="big">-10%</span><h2 class="disp" style="font-size:clamp(24px,2.6vw,34px)">On your first online order</h2>
 <p>Enter <span class="code">SUPERSONIC10</span> in your cart. One use per customer.</p><span class="btn btn-ink" style="align-self:flex-start">Shop deals {icon('arrow')}</span></a>
@@ -425,14 +453,14 @@ def build_home():
 <section class="sec" aria-labelledby="brands-h"><div class="w">{sec_head('Brands we stock', ('brands.html', 'All brands'), hid='brands-h')}</div>
 <div class="brands"><div class="brands-t">{brand_links}{brand_links.replace('<a ', '<a tabindex="-1" aria-hidden="true" ')}</div></div></section>
 
-<section class="sec w" aria-labelledby="stores-h">{sec_head('Visit a showroom', ('stores.html', 'Opening hours and directions'), hid='stores-h')}
+<section class="sec w" aria-labelledby="stores-h">{sec_head('Visit us in store', ('stores.html', 'Store details'), hid='stores-h')}
 <div class="stores">{stores}</div></section>
 
 <div class="w"><section class="news" aria-labelledby="news-h"><div><h2 class="disp" id="news-h">Flash sales, first</h2><p>One email a week with the deals before they go on the site. No spam, unsubscribe in one click.</p></div>
 <div><form data-news data-guard novalidate>{hp_field()}<label class="sr" for="news-email">Email address</label><input id="news-email" type="email" name="email" required placeholder="Your email address" autocomplete="email"><button class="btn" type="submit">Sign up</button></form>
 <p class="msg" role="status"></p></div></section></div>"""
-    write("index.html", page="home", title=f"{SITE['name']} | TVs, Phones, Appliances and Furniture in Mauritius",
-          desc="Shop TVs, phones, laptops, gaming, appliances and furniture with free delivery across Mauritius over Rs 5,000, Click & Collect and pay monthly up to 36 months.",
+    write("index.html", page="home", title=f"{SITE['name']} | TVs, Phones and Home Appliances in Mauritius",
+          desc=f"Shop TVs, phones, tablets, laptops, home appliances and accessories at {SITE['name']}, {STORE_NAMES}. Free delivery across Mauritius over Rs 5,000 and pay monthly up to 36 months.",
           body=body, schema=[ORG, WEBSITE], intro=intro)
 
 
@@ -444,7 +472,7 @@ def build_shop():
 <p class="lead">Every product we sell, with prices that include VAT and delivery across the island.</p></header>
 {listing_block(root).replace('{grid}', ''.join(card(p, root) for p in PRODUCTS))}</div>"""
     write("shop.html", page="shop", title=f"All products | {SITE['name']}",
-          desc=f"Browse all {len(PRODUCTS)} products at {SITE['name']}: TVs, phones, laptops, consoles, fridges, washing machines, air conditioners and furniture.",
+          desc=f"Browse all {len(PRODUCTS)} products at {SITE['name']}: TVs, phones, laptops, consoles, fridges, washing machines, air conditioners and accessories.",
           body=body, schema=[crumb_schema(items)])
 
 
@@ -486,16 +514,15 @@ def build_categories():
 def product_body(p, root, dynamic=False):
     c = CAT[p["cat"]]
     off = pct(p)
-    crops = [img(p["img"], 900),
-             f"https://images.unsplash.com/photo-{p['img']}?auto=format&fit=crop&w=900&h=900&crop=focalpoint&fp-x=.5&fp-y=.5&fp-z=1.6&q=70",
-             f"https://images.unsplash.com/photo-{p['img']}?auto=format&fit=crop&w=900&h=900&crop=focalpoint&fp-x=.3&fp-y=.45&fp-z=2.1&q=70",
-             f"https://images.unsplash.com/photo-{p['img']}?auto=format&fit=crop&w=900&h=900&crop=focalpoint&fp-x=.7&fp-y=.55&fp-z=2.1&q=70"]
-    thumbs = "" if dynamic else "".join(
-        f'<button type="button" data-src="{u}" aria-current="{"true" if i == 0 else "false"}" aria-label="Photo {i + 1}"><img src="{u.replace("w=900&h=900", "w=200&h=200")}" alt="" loading="lazy" width="200" height="200"></button>'
-        for i, u in enumerate(crops))
+    photos = gallery(p)
+    crops = [img(i, 900) for i in photos]
+    thumbs = "" if dynamic or len(photos) < 2 else "".join(
+        f'<button type="button" data-src="{img(i, 900)}" aria-current="{"true" if n == 0 else "false"}" aria-label="Photo {n + 1}"><img src="{img(i, 200)}" alt="" loading="lazy" width="200" height="200"></button>'
+        for n, i in enumerate(photos))
     stock = "In stock" if p["stock"] > 5 else (f"Only {p['stock']} left" if p["stock"] > 0 else "Out of stock")
     terms = "".join(f'<button type="button" aria-pressed="{"true" if m == "24" else "false"}"><b>{fmt(monthly(p["price"], m))}</b>a month, {m} months</button>' for m in SITE["installments"])
     specs = "".join(f'<tr><th scope="row">{e(k)}</th><td>{e(v)}</td></tr>' for k, v in p["specs"].items())
+    glance = "".join(f"<div><dt>{e(k)}</dt><dd>{e(v)}</dd></div>" for k, v in list(p["specs"].items())[:4])
     related = [x for x in PRODUCTS if x["cat"] == p["cat"] and x["id"] != p["id"]]
     related += [x for x in PRODUCTS if x["cat"] != p["cat"] and "best" in x["tags"]]
     cr = [("Home", "index.html"), (c["name"], f"category/{c['id']}.html"), (p["name"], None)]
@@ -504,7 +531,7 @@ def product_body(p, root, dynamic=False):
 <div class="pdp">
 <div class="gal"><div class="gal-main"><img src="{crops[0]}" {srcset(p['img'])} sizes="(max-width: 1080px) 100vw, 640px" alt="{e(p['name'])}" width="900" height="900" fetchpriority="high">
 <div class="pc-flags">{f'<span class="flag off"><span>-{off}%</span></span>' if off else ''}{'<span class="flag new"><span>New</span></span>' if 'new' in p['tags'] else ''}</div></div>
-<div class="gal-th">{thumbs}</div></div>
+<div class="gal-th"{'' if thumbs else ' hidden'}>{thumbs}</div></div>
 <div class="buy">
 <p class="pc-brand"><a href="{root}shop.html?brand={e(p['brand'])}" data-p-brand>{e(p['brand'])}</a></p>
 <h1 data-p-name>{e(p['name'])}</h1>
@@ -519,8 +546,8 @@ def product_body(p, root, dynamic=False):
 <button class="btn btn-ink btn-block" type="button" id="buy-now" style="margin-top:10px;min-height:54px">Buy now</button>
 <ul class="perks">
 <li>{icon('truck')}<span><b>Delivery in 24 to 72 hours</b><span>Anywhere on the main island. Large items are carried in and placed.</span></span></li>
-<li>{icon('store')}<span><b>Click & Collect</b><span>Free from {', '.join(s['name'] for s in STORES)}. Usually ready in 2 hours.</span></span></li>
-<li>{icon('shield')}<span><b>{e(warranty)} warranty</b><span>Repairs handled locally at our Port Louis service desk.</span></span></li>
+<li>{icon('store')}<span><b>Click &amp; Collect</b><span>Free from {e(STORE_NAMES)}. Usually ready in 2 hours.</span></span></li>
+<li>{icon('shield')}<span><b>{e(warranty)} warranty</b><span>Official local warranty. Bring it back to either store if something goes wrong.</span></span></li>
 <li>{icon('returns')}<span><b>7 day returns</b><span>On unopened items with the receipt.</span></span></li>
 </ul></div></div>
 
@@ -529,8 +556,10 @@ def product_body(p, root, dynamic=False):
 <button type="button" role="tab" id="t-ov" aria-controls="p-ov" aria-selected="true">Overview</button>
 <button type="button" role="tab" id="t-sp" aria-controls="p-sp" aria-selected="false" tabindex="-1">Specifications</button>
 <button type="button" role="tab" id="t-dl" aria-controls="p-dl" aria-selected="false" tabindex="-1">Delivery and returns</button></div>
-<div class="panel-t" id="p-ov" role="tabpanel" aria-labelledby="t-ov"><p data-p-desc>{e(p['desc'])}</p>
-<p>Buy it online or see it in any of our {len(STORES)} showrooms. Everything in {e(c['name'])} comes with a local warranty and can be paid monthly.</p></div>
+<div class="panel-t ov" id="p-ov" role="tabpanel" aria-labelledby="t-ov"><div><p data-p-desc>{e(p['desc'])}</p>
+<p>Buy it online or see it first at {e(STORE_NAMES)}. Everything in {e(c['name'])} comes with a local warranty and can be paid monthly.</p></div>
+<aside class="glance" aria-label="At a glance"><h3>At a glance</h3><dl data-p-glance>{glance}</dl>
+<button class="link" type="button" data-show-specs>All specifications {icon('arrow')}</button></aside></div>
 <div class="panel-t" id="p-sp" role="tabpanel" aria-labelledby="t-sp" hidden><table class="specs"><caption class="sr">Specifications</caption><tbody data-p-specs><tr><th scope="row">Brand</th><td>{e(p['brand'])}</td></tr>{specs}</tbody></table></div>
 <div class="panel-t" id="p-dl" role="tabpanel" aria-labelledby="t-dl" hidden><p>Delivery is free on orders over {fmt(SITE['free_delivery_from'])}. Below that it costs {fmt(SITE['delivery_fee'])} anywhere on the main island. We call the day before with a time slot.</p>
 <p>Unopened items can be returned within 7 days with the receipt. If something arrives damaged, take photos and contact us the same day and we replace it. <a class="link" href="{root}help.html">Delivery and returns help</a></p></div>
@@ -580,7 +609,7 @@ def build_deals():
 <div class="w"><section class="sec" aria-labelledby="all-h">{sec_head('Every deal', hid='all-h')}
 {listing_block(root, 'discount').replace('{grid}', ''.join(card(p, root) for p in deals))}</section></div>"""
     write("deals.html", page="deals", title=f"Today's deals | {SITE['name']}",
-          desc=f"{len(deals)} products reduced today at {SITE['name']}: TVs, phones, fridges, air conditioners and sofas. Prices reset at midnight.",
+          desc=f"{len(deals)} products reduced today at {SITE['name']}: TVs, phones, fridges, air conditioners and accessories. Prices reset at midnight.",
           body=body, schema=[crumb_schema(cr)])
 
 
@@ -596,10 +625,10 @@ def build_new():
 <p class="pc-brand" style="color:var(--yellow)">{e(p['brand'])}</p><h2 class="disp" style="font-size:clamp(26px,3vw,40px)">{e(p['name'])}</h2>
 <p><span class="tag">{fmt(p['price'])}</span></p></a>"""
     body = f"""<div class="w"><header class="ph">{crumbs(cr, root)}<h1 class="disp">New in</h1>
-<p class="lead">The latest phones, consoles, laptops and furniture to arrive in our showrooms.</p></header>
+<p class="lead">The latest phones, TVs, laptops and accessories to arrive in store.</p></header>
 <div class="duo">{feat(a)}{feat(b)}</div>
 <section class="sec" aria-labelledby="more-h">{sec_head('All new arrivals', hid='more-h')}<div class="grid">{''.join(card(p, root) for p in new)}</div></section></div>"""
-    write("new.html", page="new", title=f"New in | {SITE['name']}", desc="New phones, consoles, laptops, TVs and furniture just arrived at JS Supersonic Mauritius.",
+    write("new.html", page="new", title=f"New in | {SITE['name']}", desc="New phones, consoles, laptops, TVs and accessories just arrived at JS Supersonic Mauritius.",
           body=body, schema=[crumb_schema(cr)])
 
 
@@ -608,7 +637,7 @@ def build_brands():
     root = ""
     brands = sorted(set(p["brand"] for p in PRODUCTS), key=str.lower)
     cr = [("Home", "index.html"), ("Brands", None)]
-    links = "".join(f'<a href="shop.html?brand={e(b)}" data-label="{e(b)}"><strong>{e(b)}</strong><span>{sum(1 for p in PRODUCTS if p["brand"] == b)} products</span></a>' for b in brands)
+    links = "".join(f'<a href="shop.html?brand={e(b)}" data-label="{e(b)}"><strong>{e(b)}</strong><span>{count(sum(1 for p in PRODUCTS if p["brand"] == b))}</span></a>' for b in brands)
     body = f"""<div class="w"><header class="ph">{crumbs(cr, root)}<h1 class="disp">Brands</h1>
 <p class="lead">{len(brands)} brands, all bought through official distributors with a local warranty.</p></header><div class="az">{links}</div></div>"""
     write("brands.html", page="brands", title=f"Brands | {SITE['name']}", desc=f"Shop {', '.join(brands[:8])} and more at {SITE['name']} Mauritius.",
@@ -622,7 +651,7 @@ def build_paymonthly():
     faqs = DATA["faqs"]["Pay monthly"]
     rates = "".join(f'<li>{m} months: {"no extra cost" if r == 0 else f"{round(r * 100)}% added in total"}</li>' for m, r in SITE["installments"].items())
     body = f"""<div class="w"><header class="ph">{crumbs(cr, root)}<h1 class="disp">Pay monthly</h1>
-<p class="lead">Take your TV, fridge or sofa home now and pay for it over 6 to 36 months. Apply at checkout or in any showroom.</p></header>
+<p class="lead">Take your TV, phone or fridge home now and pay for it over 6 to 36 months. Apply at checkout or in store.</p></header>
 <section class="calc" aria-labelledby="calc-h"><div class="calc-in"><h2 class="h-sec" id="calc-h" style="margin-bottom:18px">Work out your payment</h2>
 <label for="amt" style="font-weight:700">How much do you want to spend?</label><p class="rv" id="amt-out" aria-hidden="true"></p>
 <input class="range" id="amt" type="range" min="5000" max="150000" step="500" value="35000">
@@ -642,7 +671,7 @@ def build_paymonthly():
 <p style="margin-top:28px"><a class="btn" href="deals.html">Find something to buy {icon('arrow')}</a></p></section></div>"""
     faq_schema = {"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in faqs]}
     write("pay-monthly.html", page="pay-monthly", title=f"Pay monthly | {SITE['name']}",
-          desc="Spread the cost of TVs, appliances and furniture over 6 to 36 months at JS Supersonic. Six months costs nothing extra. Calculate your monthly payment.",
+          desc="Spread the cost of TVs, phones and appliances over 6 to 36 months at JS Supersonic. Six months costs nothing extra. Calculate your monthly payment.",
           body=body, schema=[crumb_schema(cr), faq_schema])
 
 
@@ -652,13 +681,13 @@ def build_stores():
     cr = [("Home", "index.html"), ("Our stores", None)]
     tel = phone_href(SITE["phone"], root)
     cards = "".join(f"""<article class="st-card"><span class="note">{e(s['note'])}</span><h2>{e(s['name'])}</h2><p>{e(s['address'])}</p><p>{e(s['hours'])}</p>
-<div class="acts-r"><a class="btn btn-sm" href="https://www.google.com/maps/search/?api=1&amp;query={e((SITE['name'] + ' ' + s['address'] + ' Mauritius').replace(' ', '+'))}" target="_blank" rel="noopener">Directions {icon('arrow')}</a><a class="btn btn-line btn-sm" href="{tel}">Call</a></div></article>""" for s in STORES)
+<div class="acts-r"><a class="btn btn-sm" href="{maps_href(s)}" target="_blank" rel="noopener">Directions {icon('arrow')}</a><a class="btn btn-line btn-sm" href="{tel}">Call</a></div></article>""" for s in STORES)
     body = f"""<div class="w"><header class="ph">{crumbs(cr, root)}<h1 class="disp">Our stores</h1>
 <p class="lead">See the products before you buy, collect online orders free, or bring something in for a warranty repair.</p></header>
 <div class="stores-p">{cards}</div>
-<section class="sec"><div class="tips"><h2 class="h-sec">In every showroom</h2><ol><li><p>Click & Collect for online orders, usually ready in 2 hours.</p></li><li><p>Pay monthly applications answered the same day for most customers.</p></li><li><p>Trade-in quotes for your old phone.</p></li></ol></div></section></div>"""
+<section class="sec"><div class="tips"><h2 class="h-sec">{"In both stores" if len(STORES) == 2 else "In every store"}</h2><ol><li><p>Click & Collect for online orders, usually ready in 2 hours.</p></li><li><p>Pay monthly applications answered the same day for most customers.</p></li><li><p>Trade-in quotes for your old phone.</p></li></ol></div></section></div>"""
     write("stores.html", page="stores", title=f"Our stores | {SITE['name']}",
-          desc=f"Find a JS Supersonic showroom in {', '.join(s['name'] for s in STORES)}. Opening hours, directions and Click & Collect.",
+          desc=f"Find {SITE['name']} at {STORE_NAMES}. Directions, opening hours and Click & Collect.",
           body=body, schema=[crumb_schema(cr), ORG])
 
 
@@ -682,12 +711,12 @@ def build_help():
 <p class="lead">Answers about orders, delivery, returns, warranty and paying monthly.</p></header>
 <div class="help"><div><div id="faq-tabs"><div class="tabs" role="tablist" aria-label="Help topics">{tabs_html}</div></div>{panels}<div id="contact" style="scroll-margin-top:150px"></div>{form.replace('id="contact" ', '')}</div>
 <aside class="contact-card" aria-label="Contact details"><h2 class="disp">Talk to us</h2>
-<a href="{tel}">{icon('phone', 'ic')} {e(SITE['phone'])}</a><a href="{wa}"{' target="_blank" rel="noopener"' if wa.startswith('https') else ''}>{icon('chat', 'ic')} WhatsApp</a><a href="mailto:{e(SITE['email'])}">{icon('mail', 'ic')} {e(SITE['email'])}</a><a href="track.html">{icon('truck', 'ic')} Track my order</a>
+<a href="{tel}">{icon('phone', 'ic')} {e(SITE['phone'])}</a>{f'<a href="{wa}" target="_blank" rel="noopener">{icon("chat", "ic")} WhatsApp</a>' if HAS_WA else ''}<a href="mailto:{e(SITE['email'])}">{icon('mail', 'ic')} {e(SITE['email'])}</a><a href="track.html">{icon('truck', 'ic')} Track my order</a>
 <p>{e(SITE['hours'])}</p></aside></div></div>"""
     body = body.replace('<form class="box" data-guard', '<form class="box" id="contact-form" data-guard')
     faq_schema = {"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": a}} for t in topics for q, a in faqs[t]]}
     write("help.html", page="help", title=f"Help and contact | {SITE['name']}",
-          desc="Delivery costs, returns, warranty repairs and pay monthly questions answered. Call, WhatsApp or message JS Supersonic.",
+          desc="Delivery costs, returns, warranty repairs and pay monthly questions answered. Call or message JS Supersonic.",
           body=body, schema=[crumb_schema(cr), faq_schema])
     f = ROOT / "help.html"
     f.write_text(f.read_text(encoding="utf-8").replace('id="contact-form"', 'id="contact"').replace('<div id="contact" style="scroll-margin-top:150px"></div>', ''), encoding="utf-8")
@@ -772,8 +801,8 @@ def build_simple():
 </section></form>
 <aside class="box sum" id="co-sum" aria-label="Order summary"></aside></div></div>""")
     # privacy + terms
-    upd = date.today().strftime("%-d %B %Y")
-    privacy = f"""<h2>Who we are</h2><p>{e(SITE['legal_name'])} sells electronics, appliances and furniture in Mauritius and runs this website. For anything about your personal data, email {e(SITE['email'])}.</p>
+    upd = f"{date.today().day} {date.today():%B %Y}"  # not %-d, which does not exist on Windows
+    privacy = f"""<h2>Who we are</h2><p>{e(SITE['legal_name'])} sells electronics, phones and home appliances in Mauritius and runs this website. For anything about your personal data, email {e(SITE['email'])}.</p>
 <h2>What we collect</h2><ul><li>Details you give us when you order, create an account or contact us: name, email, phone, delivery address and messages.</li><li>Your cart, wishlist and recently viewed products, kept in your browser.</li><li>If you accept analytics cookies: anonymous information about pages visited.</li></ul>
 <h2>Why we use it</h2><ul><li>To deliver your order, take payment and handle warranty and returns.</li><li>To assess a pay monthly application, which you ask us to do.</li><li>To send offers, only if you signed up. Every email has an unsubscribe link.</li></ul>
 <h2>Who we share it with</h2><p>Delivery staff, our payment providers and, for pay monthly, our credit partner. We do not sell personal data.</p>
@@ -812,8 +841,11 @@ def build_data_files():
     pri = lambda p: "1.0" if p == "index.html" else "0.8" if p.startswith("category/") or p in ("deals.html", "shop.html") else "0.6"
     sm = "\n".join(f"  <url><loc>{URL}{'' if p == 'index.html' else p}</loc><lastmod>{TODAY}</lastmod><priority>{pri(p)}</priority></url>" for p in sorted(urls, key=lambda x: (x != "index.html", x)))
     (ROOT / "sitemap.xml").write_text(f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n{sm}\n</urlset>\n', encoding="utf-8")
-    (ROOT / "robots.txt").write_text(f"User-agent: *\nAllow: /\nDisallow: /admin/\nDisallow: /cart.html\nDisallow: /checkout.html\nDisallow: /account.html\nDisallow: /track.html\nDisallow: /wishlist.html\n\nSitemap: {URL}sitemap.xml\n", encoding="utf-8")
-    lines = [f"# {SITE['name']}", "", f"> {SITE['tagline']} Online shop and {len(STORES)} showrooms in Mauritius ({', '.join(s['name'] for s in STORES)}).", "",
+    if DEMO:
+        (ROOT / "robots.txt").write_text("# Concept preview, not the live shop. Set demo to false in data/catalog.json at launch.\nUser-agent: *\nDisallow: /\n", encoding="utf-8")
+    else:
+        (ROOT / "robots.txt").write_text(f"User-agent: *\nAllow: /\nDisallow: /admin/\nDisallow: /cart.html\nDisallow: /checkout.html\nDisallow: /account.html\nDisallow: /track.html\nDisallow: /wishlist.html\n\nSitemap: {URL}sitemap.xml\n", encoding="utf-8")
+    lines = [f"# {SITE['name']}", "", f"> {SITE['tagline']} Stores: {'; '.join(s['name'] + ' (' + s['address'] + ')' for s in STORES)}.", "",
              "Prices are in Mauritian rupees (Rs) and include VAT. Delivery is free on orders over Rs 5,000. Pay monthly over 6 to 36 months.", "",
              "## Main pages", f"- [All products]({URL}shop.html)", f"- [Today's deals]({URL}deals.html)", f"- [New in]({URL}new.html)", f"- [Pay monthly]({URL}pay-monthly.html)",
              f"- [Stores and opening hours]({URL}stores.html)", f"- [Help, delivery and returns]({URL}help.html)", "", "## Categories"]
@@ -835,4 +867,10 @@ if __name__ == "__main__":
     build_help()
     build_simple()
     build_data_files()
+    # pages for products and categories that are no longer in the catalogue would otherwise stay online
+    for folder in ("product", "category"):
+        for old in (ROOT / folder).glob("*.html"):
+            if f"{folder}/{old.name}" not in PAGES:
+                old.unlink()
+                print(f"Removed {folder}/{old.name} (no longer in the catalogue)")
     print(f"Built {len(PAGES)} pages ({sum(PAGES.values())} in the sitemap).")
