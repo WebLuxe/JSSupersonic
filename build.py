@@ -121,13 +121,19 @@ def icon(n, c="ic-s"):
             f'stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true">{ICON[n]}</svg>')
 
 
-LOGO = """<svg viewBox="0 0 232 48" role="img" aria-label="JS Supersonic"><title>JS Supersonic</title>
-<path d="M0 17h13M3 25h10M0 33h9" stroke="#ff5a1f" stroke-width="3"/>
-<g transform="skewX(-12)"><rect x="25" y="5" width="50" height="38" rx="7" fill="#ff5a1f"/></g>
-<text x="45" y="33" text-anchor="middle" font-family="Archivo, Arial, sans-serif" font-weight="900" font-style="italic" font-size="23" fill="#11141b">JS</text>
-<text x="80" y="28" font-family="Archivo, Arial, sans-serif" font-weight="800" font-size="20" textLength="150" lengthAdjust="spacingAndGlyphs" fill="#fff">SUPERSONIC</text>
-<text x="81" y="41" font-family="Archivo, Arial, sans-serif" font-weight="600" font-size="8" textLength="148" lengthAdjust="spacingAndGlyphs" fill="#a3a9b6">{strap}</text>
-</svg>""".replace("{strap}", html.escape(SITE.get("strapline", "Electronics · Phones · Home").upper()))
+# The ring from the shop's own logo: one thick band with thinner arcs swirling around it.
+RING_ARCS = ('<circle cx="50" cy="50" r="44.5" stroke-width="9"/>'
+             '<circle cx="50" cy="50" r="51.5" stroke-width="2.6" stroke-dasharray="118 206" transform="rotate(-70 50 50)"/>'
+             '<circle cx="50" cy="50" r="51.5" stroke-width="2.6" stroke-dasharray="70 254" transform="rotate(130 50 50)"/>'
+             '<circle cx="50" cy="50" r="55.5" stroke-width="1.6" stroke-dasharray="60 289" transform="rotate(-20 50 50)"/>'
+             '<circle cx="50" cy="50" r="55.5" stroke-width="1.6" stroke-dasharray="90 259" transform="rotate(160 50 50)"/>')
+RING = f'<svg class="ring" viewBox="-8 -8 116 116" fill="none" stroke="currentColor" aria-hidden="true">{RING_ARCS}</svg>'
+
+LOGO = f"""<svg viewBox="0 0 252 48" role="img" aria-label="JS Supersonic"><title>JS Supersonic</title>
+<g transform="translate(3 3) scale(.42)" fill="none" stroke="#f6e26b"><circle cx="50" cy="50" r="38" stroke-width="15"/><circle cx="50" cy="50" r="51" stroke-width="4" stroke-dasharray="122 198" transform="rotate(-70 50 50)"/><circle cx="50" cy="50" r="51" stroke-width="4" stroke-dasharray="76 244" transform="rotate(130 50 50)"/></g>
+<text x="56" y="27" font-family="Archivo, Arial, sans-serif" font-weight="800" font-size="21" textLength="192" lengthAdjust="spacingAndGlyphs" fill="#fff">JS SUPERSONIC</text>
+<text x="57" y="42" font-family="Archivo, Arial, sans-serif" font-weight="600" font-size="10.5" fill="#fff" fill-opacity=".86">{html.escape(SITE.get("strapline", ""))}</text>
+</svg>"""
 
 
 # ---------------------------------------------------------------- shared pieces
@@ -160,7 +166,7 @@ def rail(items, root, label):
 
 
 def sec_head(title, link=None, tag="h2", hid=None):
-    l = f'<a class="link" href="{link[0]}">{link[1]} {icon("arrow")}</a>' if link else ""
+    l = f'<a class="link" href="{link[0]}">{link[1]}</a>' if link else ""
     i = f' id="{hid}"' if hid else ""
     return f'<div class="sec-h"><{tag} class="h-sec"{i}>{title}</{tag}><span class="rule"></span>{l}</div>'
 
@@ -296,7 +302,7 @@ def layout(*, page, path, title, desc, body, schema=(), index=True, extra_body_a
 <meta name="robots" content="{robots}">
 <link rel="canonical" href="{canon}">
 <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
-<meta name="theme-color" content="#11141b">
+<meta name="theme-color" content="#e3000f">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="{e(SITE['name'])}">
 <meta property="og:title" content="{e(title)}">
@@ -394,14 +400,18 @@ def build_home():
         words = s["title"].split()
         title = " ".join(f'<span class="ln"><span style="--i:{k}">{e(w)}</span></span>' for k, w in enumerate(words))
         slides.append(f"""<div class="slide{' on' if i == 0 else ''}" aria-roledescription="slide" aria-label="{i + 1} of {len(DATA['slides'])}">
-<div class="slide-img"><img src="{img(s['img'], 1600, 900)}" srcset="{img(s['img'], 800, 900)} 800w, {img(s['img'], 1600, 900)} 1600w" sizes="100vw" alt="" width="1600" height="900"{' fetchpriority="high"' if i == 0 else ' loading="lazy"'}></div>
-<div class="w slide-c"><p class="slide-k"><span>{e(s['kicker'])}</span></p><{tag} class="disp">{title}</{tag}>
-<p class="slide-t">{e(s['text'])}</p><div class="slide-a"><a class="btn" href="{s['href']}">{e(s['cta'])} {icon('arrow')}</a></div></div></div>""")
+<div class="slide-art"><div class="slide-img"><img src="{img(s['img'], 720)}" srcset="{img(s['img'], 480)} 480w, {img(s['img'], 720)} 720w, {img(s['img'], 1040)} 1040w" sizes="(max-width: 760px) 190px, 28vw" alt="" width="720" height="720"{' fetchpriority="high"' if i == 0 else ' loading="lazy"'}></div>
+<p class="slide-tag"><small>{e(s['kicker'])}</small><b>{e(s.get('price', ''))}</b></p></div>
+<div class="w slide-c"><{tag} class="disp">{title}</{tag}>
+<p class="slide-t">{e(s['text'])}</p><div class="slide-a"><a class="btn" href="{s['href']}">{e(s['cta'])}</a></div></div></div>""")
     deal = max((p for p in PRODUCTS if p["stock"] > 0), key=pct)
     order = [c for c in ["tv-audio", "phones", "appliances", "computing", "gaming", "kitchen", "accessories"] if c in CAT]
     order += [c["id"] for c in CATS if c["id"] not in order]
-    tiles = "".join(f"""<a class="tile" href="category/{c}.html"><img src="{img(CAT[c]['img'], 900 if i == 0 else 600, 700 if i == 0 else 450)}" alt="" loading="lazy" width="600" height="450">
-<span class="tile-l"><strong>{e(CAT[c]['name'])}</strong><span>{count(sum(1 for p in PRODUCTS if p['cat'] == c))} {icon('arrow')}</span></span></a>""" for i, c in enumerate(order))
+    from_price = lambda cid: fmt(min(p["price"] for p in PRODUCTS if p["cat"] == cid))
+    tiles = "".join(f"""<a class="aisle" href="category/{c}.html"><img src="{img(CAT[c]['img'], 184)}" alt="" loading="lazy" width="184" height="184">
+<strong>{e(CAT[c]['name'])}</strong><span>from <b>{from_price(c)}</b></span></a>""" for c in order)
+    tiles += f"""<a class="aisle deal" href="deals.html"><i class="aisle-pct" aria-hidden="true">%</i>
+<strong>Today's deals</strong><span>up to <b>-{pct(deal)}%</b></span></a>"""
     deals = sorted([p for p in PRODUCTS if pct(p)], key=pct, reverse=True)[:10]
     best_tabs = [("", "All")] + [(c, t) for c, t in [("tv-audio", "TV & Audio"), ("phones", "Phones"), ("appliances", "Appliances"), ("accessories", "Accessories")] if c in CAT]
     best = sorted(PRODUCTS, key=lambda p: ("best" in p["tags"], p["reviews"]), reverse=True)[:8]
@@ -410,10 +420,10 @@ def build_home():
     brand_links = "".join(f'<a href="shop.html?brand={e(b)}" data-label="{e(b)}">{e(b)}</a>' for b in brands)
     ticker_items = ["Free delivery over Rs 5,000", "6 months at no extra cost", "Click & Collect in 2 hours", "Official local warranty", "Air con installation by our own team", f"Find us at {STORE_NAMES}"]
     tick = "".join(f"<span>{e(t)}</span>" for t in ticker_items)
-    stores = "".join(f'<div class="store"><span class="n">0{i + 1}</span><h3>{e(s["name"])}</h3><p>{e(s["address"])}<br>{e(s["hours"])}</p>'
+    stores = "".join(f'<div class="store"><h3>{e(s["name"])}</h3><p>{e(s["address"])}<br>{e(s["hours"])}</p>'
                      f'<a class="link" href="{maps_href(s)}" target="_blank" rel="noopener">Get directions {icon("arrow")}</a></div>' for i, s in enumerate(STORES))
     intro = """<div id="intro" aria-hidden="true"><div class="intro-lines"><i style="top:30%;animation-delay:0s"></i><i style="top:42%;animation-delay:.08s"></i><i style="top:58%;animation-delay:.16s"></i><i style="top:70%;animation-delay:.05s"></i></div>
-<div class="intro-core"><span class="intro-ring"></span><span class="intro-badge"><b>JS</b></span><span class="intro-word">""" + \
+<div class="intro-core"><span class="intro-ring"></span><span class="intro-mark">""" + RING + """</span><span class="intro-word">""" + \
         "".join(f'<span style="--i:{i}">{ch}</span>' for i, ch in enumerate("SUPERSONIC")) + \
         """</span></div><p class="intro-sub">""" + e(STRAP) + """</p></div>
 <script>(function(){var i=document.getElementById('intro');try{if(sessionStorage.getItem('jss_intro')||matchMedia('(prefers-reduced-motion: reduce)').matches||document.documentElement.classList.contains('entering')){i.remove()}}catch(e){i.remove()}})()</script>"""
@@ -422,13 +432,12 @@ def build_home():
 <div class="hero-ui"><div class="w"><p class="hero-n" aria-hidden="true"><b>01</b> / 0{len(DATA['slides'])}</p>
 <div class="bars">{''.join(f'<button type="button" aria-label="Show slide {i + 1}"></button>' for i in range(len(DATA['slides'])))}</div>
 <div class="hero-arr"><button class="p" type="button" aria-label="Previous slide">{icon('left')}</button><button class="n" type="button" aria-label="Next slide">{icon('arrow')}</button></div></div></div>
-<a class="dotd" href="product/{deal['slug']}.html"><img src="{img(deal['img'], 200)}" alt="" width="96" height="96"><span><span class="dotd-k">Deal of the day, -{pct(deal)}%</span>
-<h2>{e(deal['name'])}</h2><span class="tag" style="font-size:16px">{fmt(deal['price'])}</span><span class="cd" data-cd style="display:block"></span></span></a>
+<div class="hero-ring" aria-hidden="true">{RING}</div>
 </section>
 <div class="ticker" aria-label="Why shop with us"><div class="ticker-t">{tick}{tick.replace('<span>', '<span aria-hidden="true">')}</div></div>
 
 <section class="sec w" aria-labelledby="cats-h">{sec_head('Shop by category', ('shop.html', 'All products'), hid='cats-h')}
-<div class="bento">{tiles}</div></section>
+<div class="aisles">{tiles}</div></section>
 
 <section class="band" aria-labelledby="flash-h"><div class="w">
 <div class="sec-h"><h2 class="h-sec" id="flash-h">Flash deals</h2><span class="rule"></span><div class="cd-big" data-cd="big" aria-label="Time left"></div></div>
@@ -666,7 +675,7 @@ def build_paymonthly():
 <li><h3>Delivered to your door</h3><p>Once you are approved we deliver as normal. Payments start the following month.</p></li></ol></section>
 <section class="sec" aria-labelledby="docs-h"><div class="tips"><h2 class="h-sec" id="docs-h">What you need</h2><ol>
 <li><p>Your National Identity Card.</p></li><li><p>Your latest payslip, or three months of bank statements if you are self-employed.</p></li><li><p>A recent utility bill as proof of address.</p></li></ol></div></section>
-<section class="sec" aria-labelledby="rates-h"><div class="tips"><h2 class="h-sec" id="rates-h">Plan costs</h2><ol style="counter-reset:none">{rates.replace('<li>', '<li style="grid-template-columns:1fr">')}</ol></div></section>
+<section class="sec" aria-labelledby="rates-h"><div class="tips"><h2 class="h-sec" id="rates-h">Plan costs</h2><ol>{rates.replace('<li>', '<li><p>').replace('</li>', '</p></li>')}</ol></div></section>
 <section class="sec" aria-labelledby="pfaq-h">{sec_head('Questions', hid='pfaq-h')}<div class="acc">{''.join(f'<details><summary>{e(q)}<i></i></summary><p class="ans">{e(a)}</p></details>' for q, a in faqs)}</div>
 <p style="margin-top:28px"><a class="btn" href="deals.html">Find something to buy {icon('arrow')}</a></p></section></div>"""
     faq_schema = {"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in faqs]}
@@ -825,7 +834,7 @@ def build_simple():
     # 404 (base href so links work at any depth)
     picks = sorted(PRODUCTS, key=lambda p: ("best" in p["tags"], p["reviews"]), reverse=True)[:4]
     write("404.html", page="404", title=f"Page not found | {SITE['name']}", desc="This page does not exist. Search JS Supersonic or go back to the homepage.", index=False, base=URL,
-          body=f"""<div class="w nf"><p class="big" aria-hidden="true">4<span>0</span>4</p><h1 class="h-sec">This page went supersonic</h1>
+          body=f"""<div class="w nf"><p class="big" aria-hidden="true">4{RING}4</p><h1 class="h-sec">This page went supersonic</h1>
 <p>The link may be old or mistyped. Search for what you need or start from one of these.</p>
 <form class="search" action="shop.html" role="search" style="max-width:560px;margin:0 auto 22px;box-shadow:0 0 0 2px var(--ink)"><label class="sr" for="q404">Search products</label><input id="q404" type="search" name="q" placeholder="Search products"><button type="submit" aria-label="Search">{icon('search', 'ic')}</button><div class="suggest" hidden></div></form>
 <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><a class="btn" href="index.html">Go to the homepage</a><a class="btn btn-line" href="deals.html">Today's deals</a></div>

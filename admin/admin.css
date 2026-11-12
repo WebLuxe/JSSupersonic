@@ -1,8 +1,8 @@
 /* JS Supersonic admin. Same type and colours as the shop, denser layout. */
 @font-face { font-family: "Archivo"; src: url("../assets/fonts/archivo-var.woff") format("woff"); font-weight: 100 900; font-stretch: 62% 125%; font-display: swap; }
 :root {
-  --ink: #11141b; --ink-2: #1c2130; --ink-3: #2c3243; --paper: #f3f2ee; --line: #e2e0d8; --line-2: #cfccc2;
-  --muted: #575c68; --orange: #ff5a1f; --orange-text: #b23a0a; --yellow: #ffd23f; --red: #c8102e; --green: #12703a;
+  --ink: #151515; --ink-2: #222222; --ink-3: #343434; --paper: #f4f4f3; --line: #e4e4e1; --line-2: #cfcfcb;
+  --muted: #5a5a5a; --orange: #e3000f; --orange-text: #b8000c; --yellow: #f6e26b; --red: #c8102e; --green: #12703a;
   --r: 10px; --e: cubic-bezier(.2, .75, .2, 1); --eio: cubic-bezier(.75, 0, .2, 1);
 }
 * { box-sizing: border-box; }
@@ -19,10 +19,10 @@ p { margin: 0; }
 .disp { font-stretch: 125%; font-weight: 800; text-transform: uppercase; letter-spacing: -.01em; }
 
 /* buttons */
-.btn { position: relative; isolation: isolate; overflow: hidden; display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 0 18px; border-radius: 6px; background: var(--orange); color: var(--ink); font-weight: 800; font-stretch: 110%; text-transform: uppercase; font-size: 13px; letter-spacing: .02em; transition: color .3s; white-space: nowrap; }
+.btn { position: relative; isolation: isolate; overflow: hidden; display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 0 18px; border-radius: 6px; background: var(--orange); color: #fff; font-weight: 800; font-stretch: 110%; text-transform: uppercase; font-size: 13px; letter-spacing: .02em; transition: color .3s; white-space: nowrap; }
 .btn::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--ink); transform: translateX(-101%); transition: transform .35s var(--e); }
 .btn:hover { color: #fff; } .btn:hover::before { transform: none; }
-.btn.ink { background: var(--ink); color: #fff; } .btn.ink::before { background: var(--orange); } .btn.ink:hover { color: var(--ink); }
+.btn.ink { background: var(--ink); color: #fff; } .btn.ink::before { background: var(--orange); } .btn.ink:hover { color: #fff; }
 .btn.line { background: #fff; box-shadow: inset 0 0 0 2px var(--line-2); }
 .btn.line:hover { color: #fff; }
 .btn.danger { background: #fff; color: var(--red); box-shadow: inset 0 0 0 2px #f1c4cc; } .btn.danger::before { background: var(--red); } .btn.danger:hover { color: #fff; }
@@ -53,7 +53,7 @@ label.f .in, label.f .sel { font-weight: 500; }
 .app { display: grid; grid-template-columns: 248px 1fr; min-height: 100vh; }
 .side { background: var(--ink); color: #c9cdd6; position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; padding: 18px 12px; }
 .side .brand { display: flex; align-items: center; gap: 10px; padding: 4px 10px 22px; color: #fff; text-decoration: none; }
-.side .brand b { display: grid; place-items: center; width: 44px; height: 36px; background: var(--orange); color: var(--ink); border-radius: 6px; transform: skewX(-12deg); font-style: italic; font-weight: 900; }
+.side .brand b { display: grid; place-items: center; width: 44px; height: 36px; background: var(--orange); color: #fff; border-radius: 6px; transform: skewX(-12deg); font-style: italic; font-weight: 900; }
 .side .brand b span { transform: skewX(12deg); }
 .side .brand span.t { font-weight: 800; font-stretch: 118%; text-transform: uppercase; font-size: 15px; line-height: 1.1; }
 .side .brand small { display: block; font-size: 11px; color: #8d93a1; font-stretch: 100%; text-transform: none; font-weight: 600; }
@@ -62,7 +62,7 @@ label.f .in, label.f .sel { font-weight: 500; }
 .side nav a:hover { color: #fff; }
 .side nav a[aria-current="page"] { color: var(--ink); }
 .side nav .hl { position: absolute; left: 0; right: 0; height: 44px; border-radius: 6px; background: var(--yellow); transition: transform .4s var(--e); z-index: 0; }
-.side nav .n { margin-left: auto; background: var(--orange); color: var(--ink); font-size: 11px; font-weight: 800; border-radius: 10px; padding: 1px 7px; }
+.side nav .n { margin-left: auto; background: var(--orange); color: #fff; font-size: 11px; font-weight: 800; border-radius: 10px; padding: 1px 7px; }
 .side .foot { margin-top: auto; display: grid; gap: 6px; padding: 10px; font-size: 13px; }
 .side .foot a, .side .foot button { display: flex; align-items: center; gap: 10px; min-height: 40px; color: #c9cdd6; text-decoration: none; font-weight: 600; }
 .side .foot a:hover, .side .foot button:hover { color: #fff; }

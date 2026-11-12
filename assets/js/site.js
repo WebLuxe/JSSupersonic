@@ -459,7 +459,7 @@ ${p.stock > 0 && p.stock <= 5 ? `<p class="low">Only ${p.stock} left</p>` : ""}$
     const h = $(".hero"); if (!h) return;
     const slides = $$(".slide", h), bars = $$(".bars button", h), n = $(".hero-n b", h);
     const DUR = 7000;
-    let i = 0, timer, paused = false;
+    let i = 0, timer, paused = false, spin = 0;
     h.style.setProperty("--dur", DUR + "ms");
     const show = (k) => {
       const prev = slides[i];
@@ -470,6 +470,7 @@ ${p.stock > 0 && p.stock <= 5 ? `<p class="low">Only ${p.stock} left</p>` : ""}$
       void h.offsetWidth;
       bars[i].classList.add("on");
       if (n) n.textContent = String(i + 1).padStart(2, "0");
+      h.style.setProperty("--spin", `${(spin += 140)}deg`); // the ring turns a little further with every slide
       clearTimeout(timer);
       if (!paused && !reduce) timer = setTimeout(() => show(i + 1), DUR);
     };
@@ -882,7 +883,7 @@ ${p.stock > 0 && p.stock <= 5 ? `<p class="low">Only ${p.stock} left</p>` : ""}$
       track("purchase", { transaction_id: order.no, currency: "MUR", value: order.total });
       Cart.clear();
       wrap.innerHTML = `<div class="done">
-        <div class="done-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#11141b" stroke-width="3"><path d="M4 12.5 9.5 18 20 6.5"/></svg></div>
+        <div class="done-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><path d="M4 12.5 9.5 18 20 6.5"/></svg></div>
         <h1 class="disp">Order received</h1>
         <p class="lead" style="margin:0 auto">Thanks ${esc(f.fname.value.trim())}. We'll ${order.method === "home" ? "call you the day before delivery with a time slot" : `text you when it's ready to collect in ${esc(order.store)}`}${f.pay.value === "hp" ? ", and our credit team will phone you to set up your monthly plan" : ""}.</p>
         <div class="receipt">

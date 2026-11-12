@@ -2,6 +2,12 @@
 
 A concept online shop for JS Supersonic, the electronics store at Bagatelle Mall and Jumbo Phoenix in Mauritius, with an admin panel. Plain HTML, CSS and JavaScript with no frameworks, so it is fast on phones and runs on GitHub Pages or any web host.
 
+## The look
+
+The colours and the ring come from the shop's own logo (yellow ring on red, from their Facebook page). The red and yellow are set at the top of `assets/css/site.css` as `--brand` and `--yellow`. The ring in the header, hero and intro is drawn in `build.py` (`RING_ARCS`) as a stand-in until the shop supplies its real logo file.
+
+Hero slides are in `data/catalog.json` under `slides`. Each one has a photo, a headline, and a sticker made from `kicker` (small line) and `price` (big line).
+
 ## This is a concept preview, not the live shop
 
 `"demo": true` in `data/catalog.json` keeps the site in preview mode:
@@ -17,8 +23,8 @@ Set `"demo": false` and rebuild when the business has approved the content and i
 
 **Motion:**
 - An intro plays once per visit.
-- A slanted orange and black curtain sweeps across between pages.
-- The hero slider wipes between slides and the headline rises word by word.
+- A slanted red and black curtain sweeps across between pages.
+- In the hero, the ring turns with every slide, the photo opens like an iris and the headline rises word by word.
 - A ticker strip and a brand strip scroll across the page.
 - Product photos fly into the cart when you add them.
 - Tabs have a sliding underline.
@@ -85,7 +91,7 @@ Do not edit the generated `.html` files by hand. Change `build.py`, `data/catalo
   - Buttons are at least 44px. Phone numbers are tap-to-call.
   - Scrolling down on a phone tucks the logo row away and keeps the search bar.
   - Images keep their space while loading, so the page doesn't jump.
-- **Design:** one typeface (Archivo, not Inter), with no gradient text, glass panels, emoji in headings, badges above headlines or fade-in-on-scroll. All text colours pass WCAG AA contrast.
+- **Design:** the shop's own red, yellow and ring. One typeface (Archivo, not Inter), with no gradient text, glass panels, emoji in headings, badges above headlines or fade-in-on-scroll. All text colours pass WCAG AA contrast.
 - **SEO:**
   - Every page is real HTML, not built by JavaScript in the browser.
   - Canonical tags, breadcrumbs and structured data are in, including Product, store, FAQ and breadcrumb data.

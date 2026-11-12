@@ -4,7 +4,7 @@
     "legal_name": "JS Supersonic",
     "url": "https://webluxe.github.io/JSSupersonic/",
     "tagline": "TVs, phones, appliances and accessories. In store at Bagatelle Mall and Jumbo Phoenix, delivered across Mauritius.",
-    "strapline": "Electronics · Phones · Home",
+    "strapline": "Bagatelle Mall & Jumbo Phoenix",
     "phone": "+230 698 5974",
     "whatsapp": "",
     "email": "supersonicmauritius@gmail.com",
@@ -25,8 +25,9 @@
   },
   "slides": [
     {
-      "img": "1631679893114-7957e44879db",
+      "img": "1761330439671-a7f20c285c5e",
       "kicker": "TV week",
+      "price": "from Rs 12,490",
       "title": "Bigger screens, smaller prices",
       "text": "Samsung, LG, TCL and Hisense 4K TVs up to Rs 10,000 off. Wall mounting on 55 inch and up.",
       "cta": "Shop TVs",
@@ -34,7 +35,8 @@
     },
     {
       "img": "1556656793-08538906a9f8",
-      "kicker": "Pay monthly",
+      "kicker": "Over 6 months",
+      "price": "Rs 0 extra",
       "title": "New phone today, pay as you go",
       "text": "Spread any phone, TV or appliance over 6 to 36 months. Six months costs nothing extra.",
       "cta": "See how it works",
@@ -42,7 +44,8 @@
     },
     {
       "img": "1612287230202-1ff1d85d1bdf",
-      "kicker": "Gaming",
+      "kicker": "Consoles",
+      "price": "from Rs 15,990",
       "title": "PS5, Xbox and Switch in stock",
       "text": "Consoles, controllers and RTX laptops. Collect from Bagatelle Mall or Jumbo Phoenix in two hours.",
       "cta": "Shop gaming",
