@@ -6,6 +6,7 @@ content straight away. Run it after changing the catalogue:
 
     python3 build.py
 """
+import hashlib
 import html
 import json
 import re
@@ -153,7 +154,7 @@ def card(p, root):
 <p class="pc-brand">{e(p['brand'])}</p>
 <h3 class="pc-name"><a href="{href}">{name}</a></h3>
 <p class="price"><span class="tag">{fmt(p['price'])}</span>{was}</p>
-<p class="mo">or <b>{fmt(monthly(p['price'], 36))}</b> a month for 36 months</p>
+<p class="mo">or <b>{fmt(monthly(p['price'], 36))}</b> a month<span class="mo-x"> for 36 months</span></p>
 {low}<div class="pc-add"><button class="btn btn-sm" type="button" data-add="{p['id']}">Add to cart</button></div>
 </div>
 </article>"""
@@ -206,7 +207,7 @@ def header(root, page):
     by = e(SITE.get("demo_by", ""))
     by_html = f'<a href="{e(SITE["demo_link"])}" target="_blank" rel="noopener">{by}</a>' if SITE.get("demo_link") else by
     demo = (f'<div class="demo-bar" role="note"><div class="w"><b>Concept preview</b><span><span class="hide-s">A website design proposed for {e(SITE["name"])}'
-            f'{f" by {by_html}" if by else ""}. </span>Products, prices and offers are samples, and no orders are taken.</span></div></div>') if DEMO else ""
+            f'{f" by {by_html}" if by else ""}. </span>Products, prices and offers are samples<span class="hide-s">, and no orders are taken</span>.</span></div></div>') if DEMO else ""
     return f"""{demo}<div class="topbar"><div class="w"><p>{e(SITE['announcement'])}</p>
 <nav aria-label="Quick links"><a href="{root}track.html">Track my order</a><a href="{root}stores.html">Our stores</a><a href="{root}help.html">Help</a><a href="{tel}">{e(SITE['phone'])}</a></nav></div></div>
 <header class="hdr"><div class="w hdr-row">
@@ -275,8 +276,13 @@ def chrome_end(root, page):
 </nav>"""
 
 
+# With "refresh_restarts" on, pressing refresh on any page goes back to the homepage and replays the intro.
+# Handy for showing the site off. Turn it off for real shoppers, who expect refresh to keep them where they are.
+RESTART_JS = ("var n=performance.getEntriesByType('navigation')[0],r=d.documentElement.dataset.root||'',p=l.pathname;"
+              "if(n&&n.type==='reload'){sessionStorage.removeItem('jss_intro');sessionStorage.removeItem('jss_nav');"
+              "if(r||!(p.slice(-1)==='/'||p.slice(-11)==='/index.html')){l.replace(r+'index.html');return}}") if SITE.get("refresh_restarts") else ""
 HEAD_JS = ("!function(d,l){try{if(l.protocol==='http:'&&!/^(localhost|127\\.|0\\.0|192\\.168\\.)/.test(l.hostname))"
-           "l.replace('https:'+l.href.slice(5));if(sessionStorage.getItem('jss_nav')){d.documentElement.classList.add('entering');"
+           "l.replace('https:'+l.href.slice(5));" + RESTART_JS + "if(sessionStorage.getItem('jss_nav')){d.documentElement.classList.add('entering');"
            "sessionStorage.removeItem('jss_nav')}}catch(e){}}(document,location)")
 
 
@@ -318,7 +324,7 @@ def layout(*, page, path, title, desc, body, schema=(), index=True, extra_body_a
 <link rel="apple-touch-icon" href="{root}assets/img/apple-touch-icon.png">
 <link rel="preload" href="{root}assets/fonts/archivo-var.woff" as="font" type="font/woff" crossorigin>
 <link rel="preconnect" href="https://images.unsplash.com">
-<link rel="stylesheet" href="{root}assets/css/site.css">
+<link rel="stylesheet" href="{root}assets/css/site.css?v={VER}">
 <script>{HEAD_JS}</script>
 {ld}
 </head>
@@ -331,14 +337,15 @@ def layout(*, page, path, title, desc, body, schema=(), index=True, extra_body_a
 </main>
 {footer(root)}
 {chrome_end(root, page)}
-<script src="{root}assets/js/catalog.js" defer></script>
-<script src="{root}assets/js/site.js" defer></script>
+<script src="{root}assets/js/catalog.js?v={VER}" defer></script>
+<script src="{root}assets/js/site.js?v={VER}" defer></script>
 </body>
 </html>
 """
 
 
 PAGES = {}
+VER = hashlib.md5(b"".join((ROOT / p).read_bytes() for p in ("assets/css/site.css", "assets/js/site.js", "data/catalog.json"))).hexdigest()[:8]
 
 
 def write(path, **kw):
@@ -503,7 +510,7 @@ def build_categories():
 <section class="sec" aria-labelledby="spot-h"><article class="spot"><a class="spot-img" href="../product/{spot['slug']}.html" tabindex="-1" aria-hidden="true"><img src="{img(spot['img'], 900)}" alt="" loading="lazy" width="900" height="900"></a>
 <div class="spot-c"><p class="k">Our pick in {e(c['name'])}</p><h2 id="spot-h"><a href="../product/{spot['slug']}.html">{e(spot['name'])}</a></h2><p style="color:var(--muted)">{e(spot['desc'])}</p>
 <ul>{spec_items}</ul><p class="price"><span class="tag">{fmt(spot['price'])}</span>{f'<s><span class="sr">Was </span>{fmt(spot["old"])}</s>' if pct(spot) else ''}</p>
-<p class="mo">or <b>{fmt(monthly(spot['price'], 36))}</b> a month for 36 months</p>
+<p class="mo">or <b>{fmt(monthly(spot['price'], 36))}</b> a month<span class="mo-x"> for 36 months</span></p>
 <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px"><button class="btn" type="button" data-add="{spot['id']}">Add to cart</button><a class="btn btn-line" href="../product/{spot['slug']}.html">Details</a></div></div></article></section>
 <section class="sec" aria-labelledby="all-h">{sec_head(f"All {e(c['name'])}", hid='all-h')}
 {listing_block(root).replace('{grid}', ''.join(card(p, root) for p in items))}</section>

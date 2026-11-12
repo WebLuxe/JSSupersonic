@@ -309,7 +309,7 @@ html.entered #curtain b span { opacity: 0; }
 .pc .price { flex-wrap: nowrap; gap: 8px; }
 .pc .price s { font-size: 13px; white-space: nowrap; }
 @container (max-width: 256px) { .pc .tag { font-size: 16px; padding: 6px 11px 6px 9px; } .pc .price s { font-size: 12.5px; } }
-@container (max-width: 214px) { .pc .price { flex-wrap: wrap; row-gap: 4px; } .pc .price s { flex-basis: 100%; } }
+@container (max-width: 214px) { .pc .price { flex-wrap: wrap; row-gap: 4px; } .pc .price s { flex-basis: 100%; } .pc .mo-x { display: none; } }
 .pc-img { position: relative; display: block; aspect-ratio: 1 / 1; background: #ebe9e3; overflow: hidden; }
 .pc-img img { width: 100%; height: 100%; object-fit: cover; transition: transform .7s var(--e); }
 .pc:hover .pc-img img { transform: scale(1.06); }
@@ -930,27 +930,59 @@ textarea.in { padding: 12px 14px; min-height: 120px; resize: vertical; }
 .aisle.deal { background: var(--brand); color: #fff; border-bottom-color: var(--brand); }
 .aisle.deal span, .aisle.deal span b { color: #fff; }
 .aisle.deal:hover { background: var(--ink); }
+/* tablets and small laptops: one column, so long names keep their line */
+@media (max-width: 1080px) { .aisles { grid-template-columns: minmax(0, 1fr); } }
 
 @media (max-width: 760px) {
-  .hero { --art: 236px; height: 644px; }
-  .hero-ring, .slide-art { top: 14px; }
-  .hero-ring, .slide-art { top: 22px; right: -30px; margin-top: 0; }
-  .slide-c { justify-content: flex-end; padding-bottom: 92px; }
+  /* chrome: one slim notice line, no announcement strip (the ticker under the hero says the same), tighter header */
+  .topbar { display: none; }
+  .demo-bar .w { min-height: 28px; padding-top: 4px; padding-bottom: 4px; gap: 8px; align-items: center; }
+  .demo-bar span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .hdr-row { padding-top: 8px; padding-bottom: 10px; gap: 6px 10px; }
+  .search { height: 44px; }
+  /* hero: sized to what is left of the screen, so the headline and its button are visible without scrolling */
+  .hero { --art: 172px; --art: clamp(150px, calc(100svh - 500px), 250px); height: 470px; height: clamp(430px, calc(100svh - 216px), 560px); }
+  .hero-ring, .slide-art { top: 12px; right: -14px; margin-top: 0; }
+  .slide-c { justify-content: flex-end; padding-bottom: 18px; }
   .slide-c > * { max-width: 100%; }
-  .slide h1, .slide h2 { font-size: 40px; }
-  .slide-t { font-size: 16px; margin: 14px 0 20px; }
-  .slide-tag { left: -40px; bottom: 15%; padding: 9px 24px 11px 18px; }
+  .slide h1, .slide h2 { font-size: clamp(30px, 9.4vw, 40px); }
+  .slide-t { font-size: 15px; line-height: 1.45; margin: 10px 0 16px; }
+  .slide-a .btn { min-height: 46px; padding: 0 18px; }
+  .slide-tag { left: auto; right: 60%; bottom: 14%; padding: 8px 22px 9px 16px; }
   .slide-tag small { font-size: 12px; }
-  .hero-arr { display: none; }
+  .slide-tag b { font-size: 21px; }
+  .hero-ui { bottom: 19px; }
+  .hero-ui .w { justify-content: flex-end; gap: 0; }
+  .hero-n, .hero-arr { display: none; }
+  .bars { gap: 6px; }
+  .bars button { width: 26px; }
+  /* section titles share a line with their link */
+  .h-sec { font-size: clamp(18px, 5.2vw, 21px); font-stretch: 114%; }
+  .sec-h { align-items: center; gap: 4px 12px; margin-bottom: 14px; }
+  /* intro: ring above the name, so neither is squeezed */
+  .intro-core { flex-direction: column; gap: 20px; }
+  .intro-mark { width: 108px; height: 108px; }
+  .intro-ring { left: 50%; top: 54px; }
+  .intro-word { font-size: clamp(32px, 9.6vw, 56px); }
   .aisles { grid-template-columns: minmax(0, 1fr); }
   .aisle { grid-template-columns: 64px minmax(0, 1fr) auto; min-height: 64px; gap: 14px; padding-right: 4px; }
   .aisle img, .aisle-pct { width: 64px; height: 64px; }
   .aisle-pct { font-size: 28px; }
   .aisle strong { font-size: 17px; font-stretch: 112%; }
+  /* phones with a home bar: the tab bar grows instead of squeezing its icons */
+  body { padding-bottom: calc(68px + env(safe-area-inset-bottom, 0px)); }
+  .tabbar { height: calc(68px + env(safe-area-inset-bottom, 0px)); }
+  .sticky-buy { bottom: calc(68px + env(safe-area-inset-bottom, 0px)); }
+  .cookie, .toasts { bottom: calc(80px + env(safe-area-inset-bottom, 0px)); }
+}
+@media (max-width: 760px) and (max-height: 700px) {
+  .hero { --art: clamp(150px, calc(100svh - 446px), 250px); }
+  .slide-t { display: none; }
+  .slide h1, .slide h2 { margin-bottom: 16px; }
 }
 @media (max-width: 380px) {
-  .hero { --art: 200px; height: 640px; }
-  .slide h1, .slide h2 { font-size: 34px; }
+  .hero { --art: 150px; --art: clamp(140px, calc(100svh - 500px), 200px); }
+  .slide-tag b { font-size: 19px; }
   .aisle span { font-size: 12.5px; }
   .aisle span b { font-size: 14px; }
 }

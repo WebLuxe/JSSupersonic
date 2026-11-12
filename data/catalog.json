@@ -17,6 +17,7 @@
     "announcement": "Free delivery across Mauritius on orders over Rs 5,000",
     "ga_id": "",
     "demo": true,
+    "refresh_restarts": true,
     "demo_by": "WebLuxe",
     "demo_link": "",
     "installments": { "6": 0.0, "12": 0.06, "24": 0.12, "36": 0.18 },

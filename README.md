@@ -22,7 +22,7 @@ Set `"demo": false` and rebuild when the business has approved the content and i
 **Shop pages:** home, all products, 7 category pages, 40 product pages, deals, new in, brands, pay monthly, stores, help and contact, track my order, my account, wishlist, cart, checkout, privacy, terms and a 404 page.
 
 **Motion:**
-- An intro plays once per visit.
+- An intro plays once per visit. While `"refresh_restarts": true` is set in `data/catalog.json`, pressing refresh on any page goes back to the homepage and plays the intro again. This is for showing the site off, so set it to `false` before real shoppers use it.
 - A slanted red and black curtain sweeps across between pages.
 - In the hero, the ring turns with every slide, the photo opens like an iris and the headline rises word by word.
 - A ticker strip and a brand strip scroll across the page.

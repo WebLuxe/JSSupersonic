@@ -111,7 +111,7 @@
       const showIt = () => { box.hidden = false; removeEventListener("scroll", onScroll); };
       const onScroll = () => { if (scrollY > 400) showIt(); };
       addEventListener("scroll", onScroll, { passive: true });
-      setTimeout(showIt, 15000);
+      if (!matchMedia("(max-width: 760px)").matches) setTimeout(showIt, 15000);
     }
     box.addEventListener("click", (e) => {
       const b = e.target.closest("[data-consent]"); if (!b) return;
@@ -143,7 +143,7 @@
 <p class="pc-brand">${esc(p.brand)}</p>
 <h3 class="pc-name"><a href="${purl(p)}">${name}</a></h3>
 <p class="price"><span class="tag">${fmt(p.price)}</span>${off ? `<s><span class="sr">Was </span>${fmt(p.old)}</s>` : ""}</p>
-<p class="mo">or <b>${fmt(monthly(p.price, 36))}</b> a month for 36 months</p>
+<p class="mo">or <b>${fmt(monthly(p.price, 36))}</b> a month<span class="mo-x"> for 36 months</span></p>
 ${p.stock > 0 && p.stock <= 5 ? `<p class="low">Only ${p.stock} left</p>` : ""}${p.stock === 0 ? `<p class="low">Out of stock</p>` : ""}
 <div class="pc-add"><button class="btn btn-sm" type="button" data-add="${p.id}"${p.stock === 0 ? " disabled" : ""}>Add to cart</button></div>
 </div>
